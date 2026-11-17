@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reset Diario</title>
+<meta name="description" content="Horario diario y registro de hábitos personales. Los datos se guardan solo en este dispositivo.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#13161b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reset Diario">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2313161b'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%232f3844' stroke-width='3'/%3E%3Cpath d='M16 7a9 9 0 1 1-8.6 6.3' fill='none' stroke='%237fb8aa' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" id="touchIcon" href="">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#13161b;
+  --surface:#1b2027;
+  --surface2:#242b35;
+  --line:#2f3844;
+  --text:#d8dde4;
+  --muted:#95a1b1;
+  --accent:#7fb8aa;
+  --accent-ink:#0e1d19;
+  --accent-soft:rgba(127,184,170,.15);
+  --warn:#dcaa6e;
+  --warn-soft:rgba(220,170,110,.14);
+  --danger:#e09a94;
+  --danger-soft:rgba(224,154,148,.12);
+  --c-sueno:#a7a2e6;
+  --c-orden:#dcaa6e;
+  --c-cuerpo:#74bfae;
+  --c-estudio:#86b2e4;
+  --c-libre:#a9c88f;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden;
+}
+body.noscroll{overflow:hidden}
+h1,h2,h3,p,ul{margin:0}
+ul{padding:0;list-style:none}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{
+  max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;
+  padding:calc(16px + env(safe-area-inset-top)) 16px calc(92px + env(safe-area-inset-bottom));
+}
+.top{margin-bottom:14px}
+.top h1{font-size:1.5rem;letter-spacing:.2px}
+.top p{color:var(--muted);font-size:.95rem}
+.muted{color:var(--muted)}
+
+.banner{
+  background:var(--warn-soft);border:1px solid var(--warn);color:var(--warn);
+  border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:.92rem;
+}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius, 14px);
+  padding:16px;margin-bottom:14px;min-width:0;
+}
+.card h2{font-size:1.1rem;margin-bottom:12px}
+.card .hint{color:var(--muted);font-size:.9rem}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
+.card-head h2{margin:0}
+
+/* Botones */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:48px;padding:0 16px;border-radius:12px;
+  border:1px solid var(--line);background:var(--surface2);color:var(--text);
+  font-weight:600;cursor:pointer;text-align:center;
+}
+.btn:active{filter:brightness(1.15)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.danger{background:var(--danger-soft);color:var(--danger);border-color:var(--danger)}
+.btn.quiet{background:transparent}
+.btn.wide{display:flex;width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stack{display:grid;gap:10px}
+.iconbtn{
+  flex:none;width:44px;height:44px;border-radius:12px;border:1px solid transparent;
+  background:transparent;color:var(--muted);display:grid;place-items:center;cursor:pointer;
+}
+.iconbtn:active{background:var(--surface2)}
+.iconbtn svg{width:20px;height:20px}
+
+/* Pestañas inferiores */
+.tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:rgba(19,22,27,.97);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.tabbar-in{max-width:480px;margin:0 auto;display:flex;gap:8px;padding:8px 16px}
+.tab{
+  flex:1;min-height:48px;border-radius:12px;border:1px solid transparent;
+  background:transparent;color:var(--muted);font-weight:600;cursor:pointer;
+}
+.tab[aria-selected="true"]{background:var(--accent-soft);color:var(--accent);border-color:rgba(127,184,170,.35)}
+
+/* Progreso */
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+.prog-top strong{font-size:1.8rem;line-height:1}
+.prog-top span{color:var(--muted);font-size:.92rem;text-align:right}
+.track{height:12px;border-radius:99px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .3s ease}
+
+/* Bloques */
+.blocks{display:grid;gap:10px;margin-bottom:14px}
+.block{
+  --cc:var(--c-libre);
+  display:flex;align-items:center;gap:8px;min-width:0;
+  background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--cc);
+  border-radius:14px;padding:8px 6px 8px 10px;
+}
+.cat-sueno{--cc:var(--c-sueno)}
+.cat-orden{--cc:var(--c-orden)}
+.cat-cuerpo{--cc:var(--c-cuerpo)}
+.cat-estudio{--cc:var(--c-estudio)}
+.cat-libre{--cc:var(--c-libre)}
+.chk{
+  flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--muted);
+  background:transparent;color:transparent;display:grid;place-items:center;cursor:pointer;padding:0;
+}
+.chk svg{width:22px;height:22px}
+.chk[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.bmain{flex:1;min-width:0}
+.btitle{font-weight:600;overflow-wrap:anywhere}
+.bmeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:2px;font-size:.9rem;color:var(--muted)}
+.time{font-variant-numeric:tabular-nums}
+.nextday{font-size:.78rem;border:1px solid var(--line);border-radius:6px;padding:0 5px;margin-left:2px}
+.pill{
+  color:var(--cc);border:1px solid var(--cc);border-radius:99px;
+  padding:0 9px;font-size:.8rem;font-weight:600;line-height:1.5;
+}
+.block.is-done .btitle{text-decoration:line-through;color:var(--muted)}
+.block.is-done{opacity:.85}
+.empty{text-align:center;color:var(--muted)}
+.empty p{margin-bottom:12px}
+
+/* Formularios */
+.field{display:block;margin-bottom:14px;min-width:0}
+.label{display:block;font-size:.92rem;font-weight:600;margin-bottom:6px}
+.label small{display:block;font-weight:400;color:var(--muted)}
+input[type="text"],input[type="time"],input[type="date"],select{
+  display:block;width:100%;min-width:0;height:48px;padding:0 12px;
+  border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);
+  font-size:16px;-webkit-appearance:none;appearance:none;
+}
+select{
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 20px) 21px,calc(100% - 14px) 21px;
+  background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:34px;
+}
+input::placeholder{color:#6f7b8a}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.calc{
+  background:var(--bg);border:1px dashed var(--line);border-radius:10px;
+  padding:10px 12px;margin:-2px 0 14px;color:var(--muted);
+}
+.calc strong{color:var(--text)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{
+  min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--bg);
+  font-weight:600;cursor:pointer;
+}
+.seg button[aria-pressed="true"][data-val="1"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.seg button[aria-pressed="true"][data-val="0"]{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.err{color:var(--danger);font-size:.92rem;margin-bottom:12px}
+.info{color:var(--muted);font-size:.9rem;margin-bottom:12px}
+
+/* Métricas */
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.metric{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.mlabel{font-size:.85rem;color:var(--muted);font-weight:600}
+.mval{font-size:1.9rem;font-weight:700;line-height:1.2;margin:2px 0}
+.mval small{font-size:.9rem;font-weight:600;color:var(--muted);margin-left:4px}
+.msub{font-size:.82rem;color:var(--muted);overflow-wrap:anywhere}
+.mini{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;margin:4px 0 6px}
+.mini i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+
+/* Historial */
+.hist{display:grid;gap:10px}
+.hitem{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.hhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.hhead strong{text-transform:capitalize}
+.hhead span{color:var(--muted);font-size:.9rem;text-align:right}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font-size:.82rem;font-weight:600;border-radius:99px;padding:2px 10px;
+  border:1px solid var(--line);color:var(--muted);
+}
+.chip.ok{color:var(--accent);border-color:rgba(127,184,170,.45);background:var(--accent-soft)}
+.chip.no{color:var(--warn);border-color:rgba(220,170,110,.45);background:var(--warn-soft)}
+.hnote{margin-top:8px;color:var(--text);font-size:.95rem;overflow-wrap:anywhere}
+.hact{display:flex;gap:8px;margin-top:10px}
+.hact .btn{flex:1;min-height:44px;font-size:.92rem}
+
+/* Hoja modal */
+#sheetRoot{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.backdrop{position:absolute;inset:0;background:rgba(5,7,10,.65)}
+.sheet{
+  position:relative;width:100%;max-width:480px;max-height:92vh;max-height:92dvh;overflow:auto;
+  background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:18px 18px 0 0;
+  padding:14px 16px calc(18px + env(safe-area-inset-bottom));
+  animation:up .18s ease-out;
+}
+.sheet h2{font-size:1.15rem;margin-bottom:12px}
+.sheet-msg{color:var(--muted);margin-bottom:14px;overflow-wrap:anywhere}
+.sheet-actions{display:grid;gap:10px;margin-top:6px}
+.sheet textarea{
+  width:100%;min-height:200px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);padding:10px;font-size:14px;margin-bottom:10px;resize:vertical;
+}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+
+/* Aviso temporal */
+#toast{
+  position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));z-index:60;
+  transform:translate(-50%,12px);opacity:0;pointer-events:none;
+  width:calc(100% - 32px);max-width:448px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:#2a323d;border:1px solid var(--line);border-radius:12px;padding:10px 14px;
+  box-shadow:0 6px 24px rgba(0,0,0,.45);transition:opacity .18s ease,transform .18s ease;
+}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+#toast span{overflow-wrap:anywhere}
+#toast button{
+  flex:none;min-height:44px;padding:0 10px;background:transparent;border:0;
+  color:var(--accent);font-weight:700;cursor:pointer;
+}
+
+.sep{height:1px;background:var(--line);margin:14px 0}
+noscript p{padding:16px;color:var(--warn)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+<noscript><p>Reset Diario necesita JavaScript activado para funcionar.</p></noscript>
+
+<div class="app" id="app">
+  <header class="top">
+    <h1>Reset Diario</h1>
+    <p id="todayLabel"></p>
+  </header>
+
+  <div class="banner" id="storageBanner" role="alert" hidden>
+    Este navegador no permite guardar datos (modo privado o almacenamiento bloqueado). Lo que registres se perderá al cerrar la página; usa «Exportar JSON» para conservarlo.
+  </div>
+
+  <main>
+    <!-- ============ HORARIO ============ -->
+    <section id="view-horario" role="tabpanel" aria-labelledby="tab-horario">
+      <div class="card">
+        <div class="prog-top">
+          <strong id="progPct">0%</strong>
+          <span id="progText">Sin bloques todavía</span>
+        </div>
+        <div class="track" role="progressbar" id="progBar" aria-label="Progreso del día" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="fill" id="progFill"></div>
+        </div>
+      </div>
+
+      <div class="card empty" id="emptyBlocks" hidden>
+        <p>Aún no tienes bloques en tu horario. Carga la plantilla inicial y ajústala, o crea el primero.</p>
+        <button type="button" class="btn primary wide" data-act="template">Cargar plantilla inicial</button>
+      </div>
+
+      <ul class="blocks" id="blockList" aria-label="Bloques del día"></ul>
+
+      <div class="stack">
+        <button type="button" class="btn primary wide" data-act="new">+ Nuevo bloque</button>
+        <div class="btn-row">
+          <button type="button" class="btn" data-act="template">Cargar plantilla</button>
+          <button type="button" class="btn" data-act="resetChecks">Reiniciar checks del día</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHECK-IN / HISTORIAL ============ -->
+    <section id="view-checkin" role="tabpanel" aria-labelledby="tab-checkin" hidden>
+      <div class="card">
+        <h2>Métricas</h2>
+        <div class="metrics">
+          <div class="metric">
+            <div class="mlabel">Racha día limpio</div>
+            <div class="mval" id="mClean">0</div>
+            <div class="msub" id="mCleanSub"></div>
+          </div>
+          <div class="metric">
+            <div class="mlabel">Racha cuarto ordenado</div>
+            <div class="mval" id="mRoom">0</div>
+            <div class="msub" id="mRoomSub"></div>
+          </div>
+          <div class="metric">
+            <div class="mlabel">Sueño promedio</div>
+            <div class="mval" id="mSleep">—</div>
+            <div class="msub" id="mSleepSub"></div>
+          </div>
+          <div class="metric">
+            <div class="mlabel">Cumplimiento semanal</div>
+            <div class="mval" id="mWeek">—</div>
+            <div class="mini" aria-hidden="true"><i id="mWeekBar"></i></div>
+            <div class="msub" id="mWeekSub"></div>
+          </div>
+        </div>
+      </div>
+
+      <form class="card" id="checkinForm" novalidate>
+        <h2>Check-in rápido</h2>
+
+        <label class="field">
+          <span class="label">Fecha</span>
+          <input type="date" id="ciDate" required>
+        </label>
+
+        <div class="row2">
+          <label class="field">
+            <span class="label">Hora de dormir</span>
+            <input type="time" id="ciSleep">
+          </label>
+          <label class="field">
+            <span class="label">Hora de despertar</span>
+            <input type="time" id="ciWake">
+          </label>
+        </div>
+        <p class="calc" aria-live="polite">Horas dormidas: <strong id="ciHours">—</strong></p>
+
+        <div class="field" role="group" aria-labelledby="lbl-room">
+          <span class="label" id="lbl-room">Cuarto ordenado (5 min o más)</span>
+          <div class="seg" data-field="room">
+            <button type="button" data-val="1" aria-pressed="false">Sí</button>
+            <button type="button" data-val="0" aria-pressed="false">No</button>
+          </div>
+        </div>
+
+        <div class="field" role="group" aria-labelledby="lbl-body">
+          <span class="label" id="lbl-body">Cuerpo y cara</span>
+          <div class="seg" data-field="body">
+            <button type="button" data-val="1" aria-pressed="false">Sí</button>
+            <button type="button" data-val="0" aria-pressed="false">No</button>
+          </div>
+        </div>
+
+        <div class="field" role="group" aria-labelledby="lbl-clean">
+          <span class="label" id="lbl-clean">Día limpio <small>de contenido para adultos</small></span>
+          <div class="seg" data-field="clean">
+            <button type="button" data-val="1" aria-pressed="false">Sí</button>
+            <button type="button" data-val="0" aria-pressed="false">No</button>
+          </div>
+        </div>
+
+        <label class="field">
+          <span class="label">Nota breve (1 línea)</span>
+          <input type="text" id="ciNote" maxlength="140" autocomplete="off" placeholder="Algo práctico para recordar">
+        </label>
+
+        <p class="info" id="ciInfo" hidden></p>
+        <p class="err" id="ciErr" role="alert" hidden></p>
+        <button type="submit" class="btn primary wide" id="ciSubmit">Guardar check-in</button>
+      </form>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Historial</h2>
+          <span class="muted" id="histCount"></span>
+        </div>
+        <ul class="hist" id="histList"></ul>
+        <p class="hint" id="histEmpty">Todavía no hay check-ins. Guarda el primero y aparecerá aquí.</p>
+        <button type="button" class="btn wide quiet" data-act="more" id="histMore" hidden style="margin-top:10px">Ver más</button>
+      </div>
+
+      <div class="card">
+        <h2>Respaldo y análisis</h2>
+        <div class="stack">
+          <button type="button" class="btn primary wide" data-act="copy">Copiar resumen para Claude</button>
+          <div class="btn-row">
+            <button type="button" class="btn" data-act="export">Exportar JSON</button>
+            <button type="button" class="btn" data-act="import">Importar JSON</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:12px">Tus datos viven solo en este navegador. Exporta un respaldo de vez en cuando o antes de cambiar de celular.</p>
+        <div class="sep"></div>
+        <button type="button" class="btn danger wide" data-act="resetAll">Reiniciar todos los datos</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar" aria-label="Secciones">
+    <div class="tabbar-in" role="tablist">
+      <button type="button" class="tab" role="tab" id="tab-horario" data-tab="horario" aria-controls="view-horario" aria-selected="true">Horario</button>
+      <button type="button" class="tab" role="tab" id="tab-checkin" data-tab="checkin" aria-controls="view-checkin" aria-selected="false" tabindex="-1">Check-in / Historial</button>
+    </div>
+  </nav>
+</div>
+
+<div id="sheetRoot" hidden></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<input type="file" id="importFile" accept="application/json,.json" hidden>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+   *  Constantes
+   * ======================================================= */
+  var PREFIX = 'reset_diario_v1_';
+  var KEY = PREFIX + 'state';
+  var KEY_CORRUPT = PREFIX + 'corrupt';
+  var KEY_TAB = PREFIX + 'tab';
+
+  var CATS = [
+    { label: 'Sueño',       cls: 'sueno' },
+    { label: 'Orden',       cls: 'orden' },
+    { label: 'Cuerpo/Cara', cls: 'cuerpo' },
+    { label: 'Estudio',     cls: 'estudio' },
+    { label: 'Libre',       cls: 'libre' }
+  ];
+
+  var TEMPLATE = [
+    { title: 'Despertar',                       start: '07:00', end: '07:15', cat: 'Sueño' },
+    { title: 'Cuidado básico de cara y cuerpo', start: '07:15', end: '07:45', cat: 'Cuerpo/Cara' },
+    { title: 'Estudio / clases',                start: '09:00', end: '13:00', cat: 'Estudio' },
+    { title: 'Entrenamiento',                   start: '18:00', end: '19:00', cat: 'Cuerpo/Cara' },
+    { title: 'Orden del cuarto (5 min)',        start: '21:00', end: '21:05', cat: 'Orden' },
+    { title: 'Apagón de pantallas',             start: '22:00', end: '23:00', cat: 'Sueño' },
+    { title: 'Hora objetivo de dormir',         start: '23:00', end: '07:00', cat: 'Sueño' }
+  ];
+
+  var TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+  var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+  var ICON_CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.2 4.2L19 7" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var ICON_EDIT = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  /* =========================================================
+   *  Utilidades
+   * ======================================================= */
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  var uidN = 0;
+  function uid() {
+    uidN += 1;
+    return Date.now().toString(36) + uidN.toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function dateStr(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function todayStr() { return dateStr(new Date()); }
+  function parseDate(s) {
+    var p = s.split('-');
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function validDate(s) {
+    return typeof s === 'string' && DATE_RE.test(s) && dateStr(parseDate(s)) === s;
+  }
+  function addDays(s, n) {
+    var d = parseDate(s);
+    d.setDate(d.getDate() + n);
+    return dateStr(d);
+  }
+  function validTime(t) { return typeof t === 'string' && TIME_RE.test(t); }
+  function toMin(t) { var p = t.split(':'); return Number(p[0]) * 60 + Number(p[1]); }
+
+  // Minutos dormidos; si despertar es anterior o igual a dormir, cruza la medianoche.
+  function sleepMinutes(sleep, wake) {
+    if (!validTime(sleep) || !validTime(wake)) return null;
+    var diff = toMin(wake) - toMin(sleep);
+    if (diff === 0) return null;
+    if (diff < 0) diff += 1440;
+    return diff;
+  }
+  function fmtDur(min) {
+    var h = Math.floor(min / 60), m = min % 60;
+    return m ? h + ' h ' + m + ' min' : h + ' h';
+  }
+  function fmtHours(h) { return (Math.round(h * 10) / 10).toFixed(1).replace('.', ','); }
+  function plural(n, one, many) { return n === 1 ? one : many; }
+  function triLabel(v) { return v === true ? 'Sí' : (v === false ? 'No' : '—'); }
+
+  function fmtDateLong(s) {
+    try {
+      var t = parseDate(s).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+      return t.charAt(0).toUpperCase() + t.slice(1);
+    } catch (e) { return s; }
+  }
+  function fmtDateShort(s) {
+    try { return parseDate(s).toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' }); }
+    catch (e) { return s; }
+  }
+
+  function catOf(label) {
+    for (var i = 0; i < CATS.length; i++) if (CATS[i].label === label) return CATS[i];
+    return CATS[CATS.length - 1];
+  }
+
+  /* =========================================================
+   *  Estado, validación y persistencia
+   * ======================================================= */
+  function emptyState() { return { blocks: [], checkins: {}, schedLog: {}, checksDate: '' }; }
+
+  var state = emptyState();
+  var storageOk = true;
+  var corruptNotice = false;
+
+  function cleanBlock(b) {
+    if (!b || typeof b !== 'object') return null;
+    var title = typeof b.title === 'string' ? b.title.replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+    if (!title || !validTime(b.start) || !validTime(b.end)) return null;
+    var catLabel = 'Libre';
+    if (typeof b.cat === 'string') {
+      for (var i = 0; i < CATS.length; i++) {
+        if (CATS[i].label.toLowerCase() === b.cat.trim().toLowerCase()) { catLabel = CATS[i].label; break; }
+      }
+    }
+    return {
+      id: (typeof b.id === 'string' && b.id && b.id.length <= 40) ? b.id : uid(),
+      title: title, start: b.start, end: b.end, cat: catLabel, done: b.done === true
+    };
+  }
+
+  function tri(v) { return v === true ? true : (v === false ? false : null); }
+
+  function cleanCheckin(date, e) {
+    if (!validDate(date) || !e || typeof e !== 'object') return null;
+    var sleep = validTime(e.sleep) ? e.sleep : '';
+    var wake = validTime(e.wake) ? e.wake : '';
+    return {
+      date: date,
+      sleep: sleep,
+      wake: wake,
+      sleepMin: sleepMinutes(sleep, wake),
+      room: tri(e.room),
+      body: tri(e.body),
+      clean: tri(e.clean),
+      note: typeof e.note === 'string' ? e.note.replace(/\s+/g, ' ').trim().slice(0, 140) : '',
+      updated: (typeof e.updated === 'number' && isFinite(e.updated)) ? e.updated : 0
+    };
+  }
+
+  function cleanSched(date, s) {
+    if (!validDate(date) || !s || typeof s !== 'object') return null;
+    var total = Math.floor(s.total), done = Math.floor(s.done);
+    if (!(total > 0) || total > 200 || !(done >= 0) || done > total) return null;
+    return { done: done, total: total };
+  }
+
+  function sanitizeState(raw) {
+    var s = emptyState();
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return s;
+    if (Array.isArray(raw.blocks)) {
+      var ids = {};
+      raw.blocks.slice(0, 200).forEach(function (b) {
+        var c = cleanBlock(b);
+        if (!c) return;
+        if (ids[c.id]) c.id = uid();
+        ids[c.id] = true;
+        s.blocks.push(c);
+      });
+    }
+    if (raw.checkins && typeof raw.checkins === 'object' && !Array.isArray(raw.checkins)) {
+      Object.keys(raw.checkins).forEach(function (d) {
+        var c = cleanCheckin(d, raw.checkins[d]);
+        if (c) s.checkins[d] = c;
+      });
+    }
+    if (raw.schedLog && typeof raw.schedLog === 'object' && !Array.isArray(raw.schedLog)) {
+      Object.keys(raw.schedLog).forEach(function (d) {
+        var c = cleanSched(d, raw.schedLog[d]);
+        if (c) s.schedLog[d] = c;
+      });
+    }
+    s.checksDate = validDate(raw.checksDate) ? raw.checksDate : '';
+    sortBlocks(s.blocks);
+    return s;
+  }
+
+  function sortBlocks(arr) {
+    (arr || state.blocks).sort(function (a, b) {
+      return (toMin(a.start) - toMin(b.start)) || (toMin(a.end) - toMin(b.end)) || a.title.localeCompare(b.title);
+    });
+  }
+
+  function storageAvailable() {
+    try {
+      var k = PREFIX + 'probe';
+      localStorage.setItem(k, '1');
+      localStorage.removeItem(k);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function load() {
+    storageOk = storageAvailable();
+    if (!storageOk) return;
+    var raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { storageOk = false; return; }
+    if (!raw) return;
+    try {
+      state = sanitizeState(JSON.parse(raw));
+    } catch (e) {
+      try { localStorage.setItem(KEY_CORRUPT, raw); } catch (e2) { /* sin espacio: se ignora */ }
+      state = emptyState();
+      corruptNotice = true;
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        v: 1,
+        blocks: state.blocks,
+        checkins: state.checkins,
+        schedLog: state.schedLog,
+        checksDate: state.checksDate
+      }));
+      storageOk = true;
+    } catch (e) {
+      storageOk = false;
+    }
+    $('#storageBanner').hidden = storageOk;
+    return storageOk;
+  }
+
+  // Cambio de día: archiva el cumplimiento del horario anterior y limpia los checks.
+  function ensureToday() {
+    var t = todayStr();
+    if (state.checksDate === t) return false;
+    if (validDate(state.checksDate) && state.checksDate < t) {
+      var total = state.blocks.length;
+      var done = state.blocks.filter(function (b) { return b.done; }).length;
+      if (total > 0 && done > 0) state.schedLog[state.checksDate] = { done: done, total: total };
+    }
+    state.blocks.forEach(function (b) { b.done = false; });
+    state.checksDate = t;
+    save();
+    return true;
+  }
+
+  /* =========================================================
+   *  Avisos (toast) y hojas modales
+   * ======================================================= */
+  var toastTimer = null;
+  function hideToast() { $('#toast').classList.remove('show'); }
+  function toast(msg, action) {
+    var el = $('#toast');
+    el.innerHTML = '';
+    var sp = document.createElement('span');
+    sp.textContent = msg;
+    el.appendChild(sp);
+    if (action) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = action.label;
+      b.addEventListener('click', function () { hideToast(); action.onClick(); });
+      el.appendChild(b);
+    }
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, action ? 7000 : 2800);
+  }
+
+  var currentSheet = null;
+
+  function setBackgroundInert(on) {
+    var app = $('#app');
+    try { app.inert = on; } catch (e) { /* navegador sin inert */ }
+    if (on) app.setAttribute('aria-hidden', 'true'); else app.removeAttribute('aria-hidden');
+  }
+
+  function openSheet(opts) {
+    if (currentSheet) currentSheet.close();
+    var lastFocus = document.activeElement;
+    var root = $('#sheetRoot');
+    root.innerHTML =
+      '<div class="backdrop"></div>' +
+      '<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1">' +
+      '<h2 id="sheetTitle">' + esc(opts.title) + '</h2>' + opts.html + '</div>';
+    root.hidden = false;
+    document.body.classList.add('noscroll');
+    setBackgroundInert(true);
+    var el = $('.sheet', root);
+    var closed = false;
+
+    function close() {
+      if (closed) return;
+      closed = true;
+      root.hidden = true;
+      root.innerHTML = '';
+      document.body.classList.remove('noscroll');
+      setBackgroundInert(false);
+      currentSheet = null;
+      try { if (lastFocus && document.body.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); } catch (e) { /* nada */ }
+    }
+    function dismiss() {
+      if (closed) return;
+      close();
+      if (opts.onDismiss) opts.onDismiss();
+    }
+
+    $('.backdrop', root).addEventListener('click', dismiss);
+    var sheet = { el: el, close: close, dismiss: dismiss };
+    currentSheet = sheet;
+    if (opts.mount) opts.mount(el, sheet);
+    if (opts.focusSelector && $(opts.focusSelector, el)) $(opts.focusSelector, el).focus();
+    else el.focus({ preventScroll: true });
+    return sheet;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && currentSheet) currentSheet.dismiss();
+  });
+
+  // Hoja con varias opciones. Devuelve una promesa con el `value` elegido (null si se descarta).
+  function choose(opts) {
+    return new Promise(function (resolve) {
+      var buttons = opts.choices.map(function (c, i) {
+        return '<button type="button" class="btn ' + (c.kind || '') + '" data-choice="' + i + '">' + esc(c.label) + '</button>';
+      }).join('');
+      var html =
+        '<p class="sheet-msg">' + esc(opts.message) + '</p>' + (opts.extraHTML || '') +
+        '<div class="sheet-actions">' + buttons + '</div>';
+      var sheet = openSheet({
+        title: opts.title,
+        html: html,
+        focusSelector: opts.focusSelector,
+        onDismiss: function () { resolve(null); },
+        mount: function (el) {
+          el.addEventListener('click', function (ev) {
+            var b = ev.target.closest('[data-choice]');
+            if (!b || b.disabled) return;
+            var value = opts.choices[Number(b.dataset.choice)].value;
+            sheet.close();
+            resolve(value);
+          });
+          if (opts.mount) opts.mount(el);
+        }
+      });
+    });
+  }
+
+  function confirmSheet(title, message, okLabel, danger) {
+    return choose({
+      title: title, message: message,
+      choices: [
+        { label: okLabel, value: true, kind: danger ? 'danger' : 'primary' },
+        { label: 'Cancelar', value: false }
+      ]
+    }).then(function (v) { return v === true; });
+  }
+
+  /* =========================================================
+   *  Módulo 1: Horario
+   * ======================================================= */
+  function blockHTML(b) {
+    var cat = catOf(b.cat);
+    var cross = toMin(b.end) < toMin(b.start);
+    return '<li class="block cat-' + cat.cls + (b.done ? ' is-done' : '') + '">' +
+      '<button type="button" class="chk" data-act="toggle" data-id="' + esc(b.id) + '" aria-pressed="' + b.done +
+      '" aria-label="Completado: ' + esc(b.title) + '">' + ICON_CHECK + '</button>' +
+      '<div class="bmain"><div class="btitle">' + esc(b.title) + '</div>' +
+      '<div class="bmeta"><span class="time">' + b.start + '–' + b.end +
+      (cross ? ' <span class="nextday" title="Termina al día siguiente">+1</span>' : '') + '</span>' +
+      '<span class="pill">' + esc(b.cat) + '</span></div></div>' +
+      '<button type="button" class="iconbtn" data-act="edit" data-id="' + esc(b.id) + '" aria-label="Editar: ' + esc(b.title) + '">' + ICON_EDIT + '</button>' +
+      '</li>';
+  }
+
+  function renderHorario() {
+    var total = state.blocks.length;
+    var done = state.blocks.filter(function (b) { return b.done; }).length;
+    var pct = total ? Math.round(done / total * 100) : 0;
+    $('#emptyBlocks').hidden = total > 0;
+    $('#blockList').innerHTML = state.blocks.map(blockHTML).join('');
+    $('#progPct').textContent = pct + '%';
+    $('#progText').textContent = total
+      ? done + ' de ' + total + ' ' + plural(total, 'bloque', 'bloques') + ' completados'
+      : 'Sin bloques todavía';
+    $('#progFill').style.width = pct + '%';
+    var bar = $('#progBar');
+    bar.setAttribute('aria-valuenow', String(pct));
+    bar.setAttribute('aria-valuetext', pct + '%, ' + done + ' de ' + total + ' bloques');
+  }
+
+  function toggleBlock(id) {
+    var b = state.blocks.filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    b.done = !b.done;
+    save();
+    renderHorario();
+    var btn = $('[data-act="toggle"][data-id="' + id.replace(/["\\]/g, '\\$&') + '"]');
+    if (btn) btn.focus({ preventScroll: true });
+  }
+
+  function openBlockEditor(id) {
+    var b = id ? state.blocks.filter(function (x) { return x.id === id; })[0] : null;
+    if (id && !b) return;
+    var catOptions = CATS.map(function (c) {
+      return '<option value="' + esc(c.label) + '"' + (b && b.cat === c.label ? ' selected' : '') + '>' + esc(c.label) + '</option>';
+    }).join('');
+    var html =
+      '<form id="blockForm" novalidate>' +
+      '<label class="field"><span class="label">Título</span>' +
+      '<input type="text" id="bfTitle" maxlength="60" autocomplete="off" value="' + esc(b ? b.title : '') + '"></label>' +
+      '<div class="row2">' +
+      '<label class="field"><span class="label">Hora de inicio</span><input type="time" id="bfStart" value="' + (b ? b.start : '') + '"></label>' +
+      '<label class="field"><span class="label">Hora de fin</span><input type="time" id="bfEnd" value="' + (b ? b.end : '') + '"></label>' +
+      '</div>' +
+      '<label class="field"><span class="label">Categoría</span><select id="bfCat">' + catOptions + '</select></label>' +
+      '<p class="info">Si la hora de fin es menor que la de inicio, el bloque cruza la medianoche.</p>' +
+      '<p class="err" id="bfErr" role="alert" hidden></p>' +
+      '<div class="sheet-actions">' +
+      '<button type="submit" class="btn primary">Guardar bloque</button>' +
+      '<button type="button" class="btn" id="bfCancel">Cancelar</button>' +
+      (b ? '<button type="button" class="btn danger" id="bfDelete">Eliminar bloque</button>' : '') +
+      '</div></form>';
+
+    openSheet({
+      title: b ? 'Editar bloque' : 'Nuevo bloque',
+      html: html,
+      focusSelector: b ? null : '#bfTitle',
+      mount: function (el, sheet) {
+        var form = $('#blockForm', el);
+        function fail(msg) { var e = $('#bfErr', el); e.textContent = msg; e.hidden = false; }
+        form.addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          var title = $('#bfTitle', el).value.replace(/\s+/g, ' ').trim();
+          var start = $('#bfStart', el).value;
+          var end = $('#bfEnd', el).value;
+          var cat = $('#bfCat', el).value;
+          if (!title) return fail('Escribe un título para el bloque.');
+          if (!validTime(start) || !validTime(end)) return fail('Indica la hora de inicio y la de fin.');
+          if (start === end) return fail('La hora de inicio y la de fin no pueden ser iguales.');
+          if (b) { b.title = title; b.start = start; b.end = end; b.cat = catOf(cat).label; }
+          else state.blocks.push({ id: uid(), title: title, start: start, end: end, cat: catOf(cat).label, done: false });
+          sortBlocks();
+          save();
+          renderHorario();
+          sheet.close();
+          toast(b ? 'Bloque actualizado' : 'Bloque creado');
+        });
+        $('#bfCancel', el).addEventListener('click', sheet.dismiss);
+        var del = $('#bfDelete', el);
+        if (del) del.addEventListener('click', function () {
+          var idx = state.blocks.indexOf(b);
+          if (idx < 0) return;
+          state.blocks.splice(idx, 1);
+          save();
+          renderHorario();
+          sheet.close();
+          toast('Bloque eliminado', {
+            label: 'Deshacer',
+            onClick: function () { state.blocks.push(b); sortBlocks(); save(); renderHorario(); }
+          });
+        });
+      }
+    });
+  }
+
+  function loadTemplate() {
+    var prev = state.blocks.slice();
+    var ask = prev.length
+      ? choose({
+          title: 'Cargar plantilla',
+          message: 'Ya tienes bloques en tu horario. ¿Qué quieres hacer con la plantilla inicial?',
+          choices: [
+            { label: 'Reemplazar mis bloques', value: 'replace', kind: 'primary' },
+            { label: 'Agregar a los actuales', value: 'add' },
+            { label: 'Cancelar', value: null }
+          ]
+        })
+      : Promise.resolve('replace');
+    ask.then(function (mode) {
+      if (!mode) return;
+      var fresh = TEMPLATE.map(function (t) {
+        return { id: uid(), title: t.title, start: t.start, end: t.end, cat: t.cat, done: false };
+      });
+      state.blocks = mode === 'replace' ? fresh : state.blocks.concat(fresh);
+      sortBlocks();
+      save();
+      renderHorario();
+      toast('Plantilla cargada. Edita cada bloque a tu medida.', prev.length ? {
+        label: 'Deshacer',
+        onClick: function () { state.blocks = prev; sortBlocks(); save(); renderHorario(); }
+      } : null);
+    });
+  }
+
+  function resetChecks() {
+    var prev = state.blocks.filter(function (b) { return b.done; }).map(function (b) { return b.id; });
+    if (!prev.length) { toast('No hay checks marcados para reiniciar'); return; }
+    state.blocks.forEach(function (b) { b.done = false; });
+    save();
+    renderHorario();
+    toast('Checks del día reiniciados', {
+      label: 'Deshacer',
+      onClick: function () {
+        state.blocks.forEach(function (b) { if (prev.indexOf(b.id) >= 0) b.done = true; });
+        save();
+        renderHorario();
+      }
+    });
+  }
+
+  /* =========================================================
+   *  Módulo 2: Hábitos y seguimiento
+   * ======================================================= */
+  var formDate = '';
+  var formDirty = false;
+  var histLimit = 30;
+
+  function segField(field) { return $('.seg[data-field="' + field + '"]'); }
+  function getSeg(field) {
+    var on = $('button[aria-pressed="true"]', segField(field));
+    return on ? on.dataset.val === '1' : null;
+  }
+  function setSeg(field, val) {
+    $$('button', segField(field)).forEach(function (btn) {
+      var pressed = val !== null && btn.dataset.val === (val ? '1' : '0');
+      btn.setAttribute('aria-pressed', String(pressed));
+    });
+  }
+
+  function updateHoursLabel() {
+    var min = sleepMinutes($('#ciSleep').value, $('#ciWake').value);
+    $('#ciHours').textContent = min === null ? '—' : fmtDur(min);
+  }
+
+  function loadForm(date) {
+    var e = state.checkins[date] || null;
+    formDate = date;
+    formDirty = false;
+    $('#ciDate').value = date;
+    $('#ciDate').max = todayStr();
+    $('#ciSleep').value = e ? e.sleep : '';
+    $('#ciWake').value = e ? e.wake : '';
+    setSeg('room', e ? e.room : null);
+    setSeg('body', e ? e.body : null);
+    setSeg('clean', e ? e.clean : null);
+    $('#ciNote').value = e ? e.note : '';
+    $('#ciErr').hidden = true;
+    var info = $('#ciInfo');
+    info.hidden = !e;
+    info.textContent = e ? 'Ya existe un check-in de esta fecha. Al guardar se actualiza.' : '';
+    $('#ciSubmit').textContent = e ? 'Actualizar check-in' : 'Guardar check-in';
+    updateHoursLabel();
+  }
+
+  function saveCheckin() {
+    var err = $('#ciErr');
+    function fail(msg) { err.textContent = msg; err.hidden = false; }
+    err.hidden = true;
+    var date = $('#ciDate').value;
+    if (!validDate(date)) return fail('Elige una fecha válida.');
+    if (date > todayStr()) return fail('La fecha no puede ser futura.');
+    var entry = cleanCheckin(date, {
+      sleep: $('#ciSleep').value,
+      wake: $('#ciWake').value,
+      room: getSeg('room'),
+      body: getSeg('body'),
+      clean: getSeg('clean'),
+      note: $('#ciNote').value,
+      updated: Date.now()
+    });
+    if (entry.room === null && entry.body === null && entry.clean === null && !entry.sleep && !entry.wake && !entry.note) {
+      return fail('Completa al menos un campo para guardar.');
+    }
+    state.checkins[date] = entry;
+    save();
+    loadForm(date);
+    renderCheckin();
+    toast('Check-in guardado');
+  }
+
+  // Racha de días consecutivos con `field === true`. Si hoy aún no se responde, se cuenta desde ayer.
+  function streakFor(field) {
+    var t = todayStr();
+    var d = t;
+    var today = state.checkins[t];
+    if (!today || today[field] === null) d = addDays(t, -1);
+    var cur = 0;
+    while (state.checkins[d] && state.checkins[d][field] === true) { cur++; d = addDays(d, -1); }
+
+    var best = 0, run = 0, prev = null;
+    Object.keys(state.checkins).sort().forEach(function (k) {
+      if (state.checkins[k][field] === true) {
+        run = (prev && addDays(prev, 1) === k) ? run + 1 : 1;
+        prev = k;
+        if (run > best) best = run;
+      } else { run = 0; prev = null; }
+    });
+    return { cur: cur, best: best };
+  }
+
+  function schedFor(date) {
+    if (date === todayStr()) {
+      var total = state.blocks.length;
+      if (!total) return null;
+      var done = state.blocks.filter(function (b) { return b.done; }).length;
+      return { done: done, total: total };
+    }
+    return state.schedLog[date] || null;
+  }
+
+  function computeMetrics() {
+    var t = todayStr();
+    var keys = Object.keys(state.checkins).sort();
+    var m = { clean: streakFor('clean'), room: streakFor('room') };
+
+    // Sueño: promedio de los últimos 7 check-ins con horas calculadas.
+    var withSleep = keys.slice().reverse()
+      .filter(function (k) { return k <= t && state.checkins[k].sleepMin !== null; })
+      .slice(0, 7);
+    m.sleepN = withSleep.length;
+    m.sleepAvg = withSleep.length
+      ? withSleep.reduce(function (a, k) { return a + state.checkins[k].sleepMin; }, 0) / withSleep.length / 60
+      : null;
+
+    // Cumplimiento semanal: hábitos en Sí / hábitos posibles en los últimos 7 días.
+    // Se cuenta desde el primer check-in (sin penalizar días previos al uso) y se excluye hoy si aún no se registra.
+    m.weekPct = null; m.weekYes = 0; m.weekMax = 0; m.weekDays = 0; m.weekLogged = 0;
+    if (keys.length) {
+      var end = state.checkins[t] ? t : addDays(t, -1);
+      var winStart = addDays(end, -6);
+      var start = keys[0] > winStart ? keys[0] : winStart;
+      var d = start;
+      while (d <= end) {
+        m.weekDays++;
+        var e = state.checkins[d];
+        if (e) {
+          m.weekLogged++;
+          m.weekYes += (e.room === true ? 1 : 0) + (e.body === true ? 1 : 0) + (e.clean === true ? 1 : 0);
+        }
+        d = addDays(d, 1);
+      }
+      m.weekMax = m.weekDays * 3;
+      if (m.weekMax > 0) m.weekPct = Math.round(m.weekYes / m.weekMax * 100);
+    }
+    return m;
+  }
+
+  function renderMetrics() {
+    var m = computeMetrics();
+    $('#mClean').innerHTML = m.clean.cur + '<small>' + plural(m.clean.cur, 'día', 'días') + '</small>';
+    $('#mCleanSub').textContent = 'Mejor racha: ' + m.clean.best;
+    $('#mRoom').innerHTML = m.room.cur + '<small>' + plural(m.room.cur, 'día', 'días') + '</small>';
+    $('#mRoomSub').textContent = 'Mejor racha: ' + m.room.best;
+    if (m.sleepAvg === null) {
+      $('#mSleep').textContent = '—';
+      $('#mSleepSub').textContent = 'Sin horas registradas';
+    } else {
+      $('#mSleep').innerHTML = fmtHours(m.sleepAvg) + '<small>h</small>';
+      $('#mSleepSub').textContent = 'Últimos ' + m.sleepN + ' ' + plural(m.sleepN, 'registro', 'registros');
+    }
+    if (m.weekPct === null) {
+      $('#mWeek').textContent = '—';
+      $('#mWeekBar').style.width = '0%';
+      $('#mWeekSub').textContent = 'Sin registros recientes';
+    } else {
+      $('#mWeek').textContent = m.weekPct + '%';
+      $('#mWeekBar').style.width = m.weekPct + '%';
+      $('#mWeekSub').textContent = m.weekYes + '/' + m.weekMax + ' hábitos · ' + m.weekLogged + '/' + m.weekDays + ' ' + plural(m.weekDays, 'día', 'días');
+    }
+  }
+
+  function chipHTML(label, v) {
+    var cls = v === true ? 'ok' : (v === false ? 'no' : '');
+    return '<span class="chip ' + cls + '">' + label + ': ' + triLabel(v) + '</span>';
+  }
+
+  function renderHistory() {
+    var dates = Object.keys(state.checkins).sort().reverse();
+    var shown = dates.slice(0, histLimit);
+    $('#histEmpty').hidden = dates.length > 0;
+    $('#histCount').textContent = dates.length ? dates.length + ' ' + plural(dates.length, 'día', 'días') : '';
+    $('#histMore').hidden = dates.length <= shown.length;
+    $('#histList').innerHTML = shown.map(function (d) {
+      var e = state.checkins[d];
+      var sched = schedFor(d);
+      var sleepTxt = e.sleepMin !== null ? 'Sueño ' + fmtDur(e.sleepMin) : 'Sueño —';
+      return '<li class="hitem">' +
+        '<div class="hhead"><strong>' + esc(fmtDateShort(d)) + '</strong><span>' + esc(sleepTxt) + '</span></div>' +
+        '<div class="chips">' +
+        chipHTML('Cuarto', e.room) + chipHTML('Cuerpo/cara', e.body) + chipHTML('Día limpio', e.clean) +
+        (sched ? '<span class="chip">Horario ' + sched.done + '/' + sched.total + '</span>' : '') +
+        '</div>' +
+        (e.note ? '<p class="hnote">' + esc(e.note) + '</p>' : '') +
+        '<div class="hact">' +
+        '<button type="button" class="btn" data-act="hedit" data-date="' + d + '">Editar</button>' +
+        '<button type="button" class="btn danger" data-act="hdel" data-date="' + d + '">Eliminar</button>' +
+        '</div></li>';
+    }).join('');
+  }
+
+  function renderCheckin() { renderMetrics(); renderHistory(); }
+
+  function editDay(date) {
+    if (!state.checkins[date]) return;
+    loadForm(date);
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('#checkinForm').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    toast('Editando ' + fmtDateShort(date));
+  }
+
+  function deleteDay(date) {
+    if (!state.checkins[date]) return;
+    confirmSheet('Eliminar día', 'Se eliminará el check-in del ' + fmtDateShort(date) + ' (' + date + '). No se puede deshacer.', 'Eliminar día', true)
+      .then(function (ok) {
+        if (!ok) return;
+        delete state.checkins[date];
+        delete state.schedLog[date];
+        save();
+        if (formDate === date) loadForm(date);
+        renderCheckin();
+        toast('Día eliminado');
+      });
+  }
+
+  /* =========================================================
+   *  Módulo 3: Respaldo y análisis
+   * ======================================================= */
+  function buildSummary() {
+    var t = todayStr();
+    var now = new Date();
+    var m = computeMetrics();
+    var L = [];
+    L.push('RESUMEN RESET DIARIO');
+    L.push('Generado: ' + t + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()));
+    L.push('');
+
+    var total = state.blocks.length;
+    var done = state.blocks.filter(function (b) { return b.done; }).length;
+    L.push('HORARIO DE HOY (' + t + '): ' + done + '/' + total + ' bloques cumplidos' + (total ? ' (' + Math.round(done / total * 100) + '%)' : ''));
+    if (!total) L.push('(sin bloques definidos)');
+    state.blocks.forEach(function (b) {
+      L.push((b.done ? '[x] ' : '[ ] ') + b.start + '-' + b.end + ' ' + b.title + ' (' + b.cat + ')');
+    });
+    L.push('');
+
+    var dates = Object.keys(state.checkins).sort().reverse().slice(0, 7);
+    L.push('ÚLTIMOS CHECK-INS (más reciente primero):');
+    if (!dates.length) L.push('(sin check-ins)');
+    dates.forEach(function (d) {
+      var e = state.checkins[d];
+      var sched = schedFor(d);
+      var sleepTxt = e.sleepMin !== null
+        ? e.sleep + ' → ' + e.wake + ' (' + fmtDur(e.sleepMin) + ')'
+        : ((e.sleep || e.wake) ? (e.sleep || '?') + ' → ' + (e.wake || '?') + ' (sin cálculo)' : 'sin dato');
+      L.push('- ' + d +
+        ' | sueño: ' + sleepTxt +
+        ' | cuarto 5min+: ' + triLabel(e.room) +
+        ' | cuerpo/cara: ' + triLabel(e.body) +
+        ' | día limpio: ' + triLabel(e.clean) +
+        ' | horario: ' + (sched ? sched.done + '/' + sched.total : '—') +
+        (e.note ? ' | nota: "' + e.note + '"' : ''));
+    });
+    L.push('');
+
+    L.push('MÉTRICAS:');
+    L.push('- Racha actual de días limpios: ' + m.clean.cur + ' (mejor: ' + m.clean.best + ')');
+    L.push('- Racha actual de cuarto ordenado: ' + m.room.cur + ' (mejor: ' + m.room.best + ')');
+    L.push('- Promedio de sueño: ' + (m.sleepAvg === null ? 'sin datos' : fmtHours(m.sleepAvg) + ' h (últimos ' + m.sleepN + ' registros)'));
+    L.push('- Cumplimiento semanal: ' + (m.weekPct === null ? 'sin datos' :
+      m.weekPct + '% (' + m.weekYes + '/' + m.weekMax + ' hábitos; ' + m.weekLogged + '/' + m.weekDays + ' días registrados)'));
+    L.push('');
+    L.push('Con estos datos: ¿qué patrones ves y qué 2 o 3 ajustes concretos y realistas me recomiendas para mañana? Tono sobrio y práctico, sin culpa.');
+    return L.join('\n');
+  }
+
+  function copyText(text) {
+    function legacy() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return Promise.resolve(!!ok);
+      } catch (e) { return Promise.resolve(false); }
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }, legacy);
+    }
+    return legacy();
+  }
+
+  function copySummary() {
+    var text = buildSummary();
+    copyText(text).then(function (ok) {
+      if (ok) { toast('Resumen copiado. Pégalo en el chat con Claude.'); return; }
+      openSheet({
+        title: 'Copia el resumen',
+        html: '<p class="sheet-msg">Tu navegador no permitió copiar automáticamente. Mantén presionado el texto, selecciónalo todo y cópialo.</p>' +
+          '<textarea id="sumText" readonly>' + esc(text) + '</textarea>' +
+          '<div class="sheet-actions"><button type="button" class="btn" id="sumClose">Cerrar</button></div>',
+        focusSelector: '#sumText',
+        mount: function (el, sheet) {
+          $('#sumClose', el).addEventListener('click', sheet.close);
+          var ta = $('#sumText', el);
+          ta.addEventListener('focus', function () { ta.select(); });
+        }
+      });
+    });
+  }
+
+  function exportJSON() {
+    try {
+      var payload = {
+        app: 'reset-diario',
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        checksDate: state.checksDate,
+        blocks: state.blocks,
+        checkins: state.checkins,
+        schedLog: state.schedLog
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'reset-diario-' + todayStr() + '.json';
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+      toast('Respaldo exportado: ' + a.download);
+    } catch (e) {
+      toast('No se pudo exportar el respaldo en este navegador');
+    }
+  }
+
+  function onImportFile(file) {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast('El archivo es demasiado grande para ser un respaldo'); return; }
+    var reader = new FileReader();
+    reader.onerror = function () { toast('No se pudo leer el archivo'); };
+    reader.onload = function () { processImport(String(reader.result || '')); };
+    reader.readAsText(file);
+  }
+
+  function processImport(text) {
+    var data;
+    try { data = JSON.parse(text); }
+    catch (e) { toast('Ese archivo no es un JSON válido'); return; }
+    if (!data || typeof data !== 'object' || Array.isArray(data) || (data.app && data.app !== 'reset-diario')) {
+      toast('El archivo no tiene el formato de Reset Diario');
+      return;
+    }
+    var imp = sanitizeState(data);
+    var nb = imp.blocks.length;
+    var nc = Object.keys(imp.checkins).length;
+    if (!nb && !nc) { toast('No encontré bloques ni check-ins válidos en el archivo'); return; }
+
+    choose({
+      title: 'Importar respaldo',
+      message: 'El archivo trae ' + nb + ' ' + plural(nb, 'bloque', 'bloques') + ' y ' + nc + ' ' + plural(nc, 'check-in', 'check-ins') +
+        '. «Fusionar» conserva tus datos actuales y agrega lo nuevo; «Reemplazar» los sustituye por completo.',
+      choices: [
+        { label: 'Fusionar con mis datos', value: 'merge', kind: 'primary' },
+        { label: 'Reemplazar todo', value: 'replace', kind: 'danger' },
+        { label: 'Cancelar', value: null }
+      ]
+    }).then(function (mode) {
+      if (!mode) return null;
+      if (mode === 'replace') {
+        return confirmSheet('Reemplazar todo', 'Se borrarán el horario y el historial actuales de este dispositivo y se usará el contenido del archivo.', 'Sí, reemplazar', true)
+          .then(function (ok) { return ok ? 'replace' : null; });
+      }
+      return mode;
+    }).then(function (mode) {
+      if (!mode) return;
+      if (mode === 'replace') {
+        state = imp;
+      } else {
+        var ids = {}, sigs = {};
+        var sig = function (b) { return [b.start, b.end, b.cat, b.title.toLowerCase()].join('|'); };
+        state.blocks.forEach(function (b) { ids[b.id] = true; sigs[sig(b)] = true; });
+        imp.blocks.forEach(function (b) {
+          if (ids[b.id] || sigs[sig(b)]) return;
+          b.done = false;
+          state.blocks.push(b);
+          ids[b.id] = true; sigs[sig(b)] = true;
+        });
+        Object.keys(imp.checkins).forEach(function (d) {
+          var cur = state.checkins[d];
+          if (!cur || imp.checkins[d].updated > cur.updated) state.checkins[d] = imp.checkins[d];
+        });
+        Object.keys(imp.schedLog).forEach(function (d) {
+          if (!state.schedLog[d]) state.schedLog[d] = imp.schedLog[d];
+        });
+      }
+      sortBlocks();
+      ensureToday();
+      save();
+      renderAll();
+      loadForm(todayStr());
+      toast(mode === 'replace' ? 'Datos reemplazados desde el archivo' : 'Datos fusionados correctamente');
+    });
+  }
+
+  function resetAll() {
+    choose({
+      title: 'Reiniciar todos los datos',
+      message: 'Se borrarán el horario, los check-ins y el historial de este dispositivo. No se puede deshacer. Si quieres conservar una copia, exporta el JSON antes.',
+      extraHTML: '<label class="field"><span class="label">Escribe BORRAR para confirmar</span>' +
+        '<input type="text" id="rsConfirm" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>',
+      choices: [
+        { label: 'Borrar todo', value: true, kind: 'danger' },
+        { label: 'Cancelar', value: false }
+      ],
+      mount: function (el) {
+        var ok = $('[data-choice="0"]', el);
+        var input = $('#rsConfirm', el);
+        ok.disabled = true;
+        input.addEventListener('input', function () {
+          ok.disabled = input.value.trim().toUpperCase() !== 'BORRAR';
+        });
+      }
+    }).then(function (ok) {
+      if (ok !== true) return;
+      try {
+        localStorage.removeItem(KEY);
+        localStorage.removeItem(KEY_CORRUPT);
+      } catch (e) { /* sin almacenamiento */ }
+      state = emptyState();
+      state.checksDate = todayStr();
+      save();
+      histLimit = 30;
+      renderAll();
+      loadForm(todayStr());
+      toast('Todos los datos fueron reiniciados');
+    });
+  }
+
+  /* =========================================================
+   *  Navegación, render general y eventos
+   * ======================================================= */
+  var TABS = ['horario', 'checkin'];
+
+  function setTab(name, focusTab) {
+    if (TABS.indexOf(name) < 0) name = 'horario';
+    TABS.forEach(function (n) {
+      var on = n === name;
+      $('#view-' + n).hidden = !on;
+      var tab = $('#tab-' + n);
+      tab.setAttribute('aria-selected', String(on));
+      tab.tabIndex = on ? 0 : -1;
+      if (on && focusTab) tab.focus();
+    });
+    try { localStorage.setItem(KEY_TAB, name); } catch (e) { /* se ignora */ }
+    window.scrollTo(0, 0);
+  }
+
+  function renderHeader() { $('#todayLabel').textContent = fmtDateLong(todayStr()); }
+  function renderAll() { renderHeader(); renderHorario(); renderCheckin(); }
+
+  function afterRollover() {
+    renderAll();
+    if (!formDirty) loadForm(todayStr());
+    else $('#ciDate').max = todayStr();
+  }
+
+  function setupIcons() {
+    try {
+      var c = document.createElement('canvas');
+      c.width = c.height = 180;
+      var g = c.getContext('2d');
+      g.fillStyle = '#13161b';
+      g.fillRect(0, 0, 180, 180);
+      g.lineWidth = 16;
+      g.lineCap = 'round';
+      g.strokeStyle = '#2f3844';
+      g.beginPath(); g.arc(90, 90, 54, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = '#7fb8aa';
+      g.beginPath(); g.arc(90, 90, 54, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * 0.8); g.stroke();
+      g.lineWidth = 14;
+      g.lineJoin = 'round';
+      g.beginPath(); g.moveTo(66, 92); g.lineTo(84, 110); g.lineTo(116, 72); g.stroke();
+      $('#touchIcon').href = c.toDataURL('image/png');
+    } catch (e) { /* sin canvas: se omite el icono */ }
+  }
+
+  function bindEvents() {
+    document.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-act]');
+      if (!t) return;
+      switch (t.dataset.act) {
+        case 'toggle': toggleBlock(t.dataset.id); break;
+        case 'edit': openBlockEditor(t.dataset.id); break;
+        case 'new': openBlockEditor(null); break;
+        case 'template': loadTemplate(); break;
+        case 'resetChecks': resetChecks(); break;
+        case 'hedit': editDay(t.dataset.date); break;
+        case 'hdel': deleteDay(t.dataset.date); break;
+        case 'more': histLimit += 30; renderHistory(); break;
+        case 'copy': copySummary(); break;
+        case 'export': exportJSON(); break;
+        case 'import': $('#importFile').click(); break;
+        case 'resetAll': resetAll(); break;
+      }
+    });
+
+    // Pestañas (con navegación por flechas)
+    $$('.tab').forEach(function (tab) {
+      tab.addEventListener('click', function () { setTab(tab.dataset.tab); });
+      tab.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        var i = TABS.indexOf(tab.dataset.tab);
+        var next = TABS[(i + (e.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length];
+        setTab(next, true);
+      });
+    });
+
+    // Formulario de check-in
+    $('#checkinForm').addEventListener('submit', function (e) { e.preventDefault(); saveCheckin(); });
+    $('#checkinForm').addEventListener('input', function () { formDirty = true; });
+    $('#ciSleep').addEventListener('input', updateHoursLabel);
+    $('#ciWake').addEventListener('input', updateHoursLabel);
+    $('#ciDate').addEventListener('change', function () {
+      var d = $('#ciDate').value;
+      if (validDate(d) && d <= todayStr()) loadForm(d);
+    });
+    $$('.seg').forEach(function (seg) {
+      seg.addEventListener('click', function (e) {
+        var btn = e.target.closest('button');
+        if (!btn) return;
+        var field = seg.dataset.field;
+        var already = btn.getAttribute('aria-pressed') === 'true';
+        setSeg(field, already ? null : btn.dataset.val === '1');
+        formDirty = true;
+      });
+    });
+
+    $('#importFile').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      onImportFile(f);
+      e.target.value = '';
+    });
+
+    // Cambio de día con la app abierta o en segundo plano
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && ensureToday()) afterRollover();
+    });
+    setInterval(function () { if (ensureToday()) afterRollover(); }, 60000);
+
+    // Cambios hechos desde otra pestaña del mismo navegador
+    window.addEventListener('storage', function (e) {
+      if (e.key !== null && e.key !== KEY) return;
+      load();
+      ensureToday();
+      renderAll();
+      if (!formDirty) loadForm(formDate || todayStr());
+    });
+  }
+
+  function boot() {
+    load();
+    ensureToday();
+    $('#storageBanner').hidden = storageOk;
+    setupIcons();
+    bindEvents();
+    renderAll();
+    loadForm(todayStr());
+    var tab = 'horario';
+    try { tab = localStorage.getItem(KEY_TAB) || 'horario'; } catch (e) { /* se ignora */ }
+    setTab(tab);
+    if (corruptNotice) {
+      toast('Los datos guardados no se pudieron leer; se inició en blanco. Se conservó una copia interna.');
+    }
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
